@@ -1,0 +1,83 @@
+<project xmlns:ivy="antlib:org.apache.ivy.ant" name="Cuke4Duke Java-Ant Starter Project" default="cucumber" basedir=".">
+  <property name="jruby.home" value="${basedir}/lib/.jruby"/>
+  
+  <property name="ivy.install.version" value="2.2.0" />
+  <condition property="ivy.home" value="${env.IVY_HOME}">
+    <isset property="env.IVY_HOME" />
+  </condition>
+  <property name="ivy.home" value="${user.home}/.ant" />
+  <property name="ivy.jar.dir" value="${ivy.home}/lib" />
+  <property name="ivy.jar.file" value="${ivy.jar.dir}/ivy.jar" />
+
+  <target name="download-ivy" unless="offline">
+    <mkdir dir="${ivy.jar.dir}"/>
+    <get src="http://repo2.maven.org/maven2/org/apache/ivy/ivy/${ivy.install.version}/ivy-${ivy.install.version}.jar" 
+         dest="${ivy.jar.file}" usetimestamp="true"/>
+  </target>
+
+  <target name="init-ivy" depends="download-ivy">
+    <path id="ivy.lib.path">
+        <fileset dir="${ivy.jar.dir}" includes="*.jar"/>
+  </path>
+    <taskdef resource="org/apache/ivy/ant/antlib.xml"
+             uri="antlib:org.apache.ivy.ant" classpathref="ivy.lib.path"/>
+  </target>
+
+  <target name="install-dependencies" depends="init-ivy">
+    <property name="ivy" value="true" />
+    <property name="gems" value="true" />
+    <antcall target="-install-gems" />
+  </target>
+  
+  <target name="-compile-steps" depends="-define-paths">
+    <mkdir dir="target/test-classes"/>
+    <javac srcdir="src/test/java" destdir="target/test-classes" classpathref="compile.classpath" encoding="UTF-8"/>
+  </target>
+
+  <target name="cucumber" depends="-compile-steps,-install-gems" description="Run Cucumber">
+    <mkdir dir="target/junit-report"/>
+    <taskdef name="cucumber" classname="cuke4duke.ant.CucumberTask" classpathref="compile.classpath"/>
+    <cucumber
+            args="--verbose --require target/test-classes --color --format pretty --format junit --out target/junit-report features"
+            objectFactory="pico">
+      <classpath>
+        <pathelement location="target/test-classes"/>
+      </classpath>
+    </cucumber>
+  </target>
+
+  <target name="-download-jars" if="ivy">
+    <ivy:retrieve/>
+  </target>
+
+  <target name="-install-gems" depends="-define-paths" if="gems">
+    <taskdef name="gem" classname="cuke4duke.ant.GemTask" classpathref="compile.classpath"/>
+    <gem args="install cuke4duke --version 0.4.2"/>
+  </target>
+
+  <target name="-define-paths" depends="-download-jars">
+    <path id="jruby.classpath">
+      <fileset dir="lib">
+        <include name="**/*.jar"/>
+      </fileset>
+    </path>
+
+    <path id="compile.classpath">
+      <fileset dir="lib">
+        <include name="**/*.jar"/>
+      </fileset>
+    </path>
+  </target>
+
+  <target name="clean" description="Delete all generated artifacts">
+    <delete dir="${basedir}/target"/>
+  </target>
+
+  <target name="clean-deps" description="Delete all dependencies">
+    <delete dir="${basedir}/lib/.jruby"/>
+    <delete>
+      <fileset dir="${basedir}/lib" includes="*.jar"/>
+    </delete>
+  </target>
+
+</project>
