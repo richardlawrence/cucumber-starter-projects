@@ -31,7 +31,7 @@
   
   <target name="-compile-steps" depends="-define-paths">
     <mkdir dir="target/test-classes"/>
-    <javac srcdir="src/test/java" destdir="target/test-classes" classpathref="compile.classpath" encoding="UTF-8"/>
+    <javac srcdir="src/test/java" destdir="target/test-classes" classpathref="compile.classpath" encoding="UTF-8" includeantruntime="false" />
   </target>
 
   <target name="cucumber" depends="-compile-steps,-install-gems" description="Run Cucumber">
