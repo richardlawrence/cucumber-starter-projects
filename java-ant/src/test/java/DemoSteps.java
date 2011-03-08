@@ -1,4 +1,6 @@
-import cuke4duke.annotation.Pending; 
+package test.java;
+
+import cuke4duke.annotation.Pending;
 import cuke4duke.annotation.I18n.EN.Then;
 
 public class DemoSteps {
